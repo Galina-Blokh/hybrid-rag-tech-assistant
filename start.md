@@ -117,9 +117,12 @@ This downloads three PDF manuals to the `data/` directory:
 - `carrier-30xa-controls.pdf` (206 pages) - Controls, configuration & diagnostics  
 - `carrier-30xa-installation.pdf` (52 pages) - Dimensions, clearances, setup
 
-### 3. Ingest Documents
+### 3. Option A: Fresh Ingestion (First-time setup)
 
 ```bash
+# Download the Carrier 30XA manuals
+python download_data.py
+
 # Synchronous ingestion (default)
 python -m src.ingest
 
@@ -128,10 +131,41 @@ python -m src.ingest --async
 ```
 
 This:
+- Downloads three PDF manuals to the `data/` directory
 - Extracts text and tables from PDFs
 - Chunks with sliding window (600 chars, 200 overlap)
 - Creates dense ChromaDB embeddings and sparse BM25 index
 - Persists to `chroma_db/` for reuse
+
+### 3. Option B: Use Existing Database (Clone & Chat)
+
+If you have a repository with the `chroma_db/` folder already included, you can skip ingestion entirely:
+
+```bash
+# Clone repo with existing ChromaDB
+git clone <repo-url>
+cd interview-blokh-galina
+
+# Install dependencies
+uv sync --all-groups
+
+# Set up OpenAI API key
+echo "OPENAI_API_KEY=sk-your-key-here" > .env
+
+# Start chatting immediately!
+python -m src.chat
+```
+
+**What's already available in `chroma_db/`:**
+- Dense embeddings: All text chunks embedded with OpenAI's text-embedding-3-small
+- BM25 corpus: `chroma_db/bm25_corpus.pkl` for sparse keyword retrieval
+- Metadata: Source file names and page numbers for citations
+
+**When to re-ingest:** Only run `python -m src.ingest` if you:
+- Add new PDF files to `data/`
+- Update existing PDFs
+- Want to change chunking parameters
+- Need to use a different embedding model
 
 ### 4. Query the System
 
